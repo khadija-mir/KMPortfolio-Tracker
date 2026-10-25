@@ -39,7 +39,7 @@ def get_asset(ticker):
     except KeyError:
         raise AssetNotFoundError(
             f"No asset exists with ticker '{ticker}'."
-        ) from None
+        )
 
 def list_assets():
     return list(assets.values())
