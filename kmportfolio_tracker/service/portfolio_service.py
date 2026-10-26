@@ -66,11 +66,11 @@ def delete_portfolio(name):
     global selected_portfolio
 
     portfolio = get_portfolio(name)
-
-    if any(p.quantity > 0 for p in portfolio.positions.values()):
-        raise PortfolioNotEmptyError(
-            "You should sell all shares before deleting this portfolio."
-        )
+    for position in portfolio.positions.values():
+        if position.quantity > 0:
+            raise PortfolioNotEmptyError(
+                "You should sell all shares before deleting this portfolio."
+            )
 
     del portfolios[portfolio.name.lower()]
     if selected_portfolio is portfolio:

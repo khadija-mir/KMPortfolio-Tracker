@@ -1,6 +1,6 @@
 from kmportfolio_tracker.errors.base_error import PortfolioTrackerError
 
-# Raised when adding an asset whose ticker already exists.
+#Error when adding an asset whose ticker already exists.
 class DuplicateAssetError(PortfolioTrackerError):
     def __init__(self, message):
         super().__init__(message)
