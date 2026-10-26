@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 portfolios = {}
 selected_portfolio = None
 
-
 def create_portfolio(name, description):
     name = name.strip()
     description = description.strip()
@@ -24,13 +23,17 @@ def create_portfolio(name, description):
         raise MissingReqInputError(
             "Portfolio name and strategy description are required."
         )
-    if name in portfolios:
+    #ignore case, so "Tech" == "tech" (same portfolio)
+    lowercase_name = name.lower()
+    if lowercase_name in portfolios:
+        existing_name = portfolios[lowercase_name].name
         raise DuplicatePortfolioError(
-            f"A portfolio named '{name}' already exists."
+            f"A portfolio named '{existing_name}' already exists."
+            f" Select '{existing_name}' instead of creating a new one!"
         )
-    portfolios[name] = Portfolio(name, description)
+    portfolios[lowercase_name] = Portfolio(name, description)
     logger.info("Created portfolio %s", name)
-    return portfolios[name]
+    return portfolios[lowercase_name]
 
 def list_portfolios():
     return [
@@ -41,7 +44,7 @@ def list_portfolios():
 def get_portfolio(name):
     name = name.strip()
     try:
-        return portfolios[name]
+        return portfolios[name.lower()]
     except KeyError:
         raise PortfolioNotFoundError(
             f"No portfolio named '{name}' exists."
@@ -52,14 +55,12 @@ def select_portfolio(name):
     selected_portfolio = get_portfolio(name)
     logger.info("Selected portfolio %s", name)
 
-
 def get_selected_portfolio():
     if selected_portfolio is None:
         raise NoPortfolioSelectedError(
             "Select a portfolio before trading."
         )
     return selected_portfolio
-
 
 def delete_portfolio(name):
     global selected_portfolio
@@ -71,7 +72,7 @@ def delete_portfolio(name):
             "You should sell all shares before deleting this portfolio."
         )
 
-    del portfolios[name]
+    del portfolios[portfolio.name.lower()]
     if selected_portfolio is portfolio:
         selected_portfolio = None
     logger.info("Deleted portfolio %s", name)
