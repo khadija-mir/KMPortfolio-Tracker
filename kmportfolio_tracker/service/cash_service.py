@@ -2,13 +2,13 @@ import logging
 from decimal import Decimal
 
 from kmportfolio_tracker.errors import (
-    InvalidAmountError,
     InsufficientFundsError,
+    InvalidAmountError,
 )
 
 logger = logging.getLogger(__name__)
 #"One cash balance is shared by all portfolios" - calc rules
-cash_balance = Decimal("0")
+cash_balance = Decimal(0)
 
 def deposit(amount):
     global cash_balance

@@ -1,6 +1,7 @@
 import logging
 
 from kmportfolio_tracker.cli import run
+
 logger = logging.getLogger(__name__)
 
 def configure_logging():

@@ -2,7 +2,7 @@ from decimal import Decimal
 
 
 class Position:
-    def __init__(self, asset, quantity=Decimal("0"), average_cost=Decimal("0")):
+    def __init__(self, asset, quantity=Decimal(0), average_cost=Decimal(0)):
         self.asset = asset
         self.quantity = quantity
         self.average_cost = average_cost

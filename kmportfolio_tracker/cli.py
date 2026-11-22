@@ -9,9 +9,9 @@ from rich.table import Table
 from kmportfolio_tracker.errors import PortfolioTrackerError
 from kmportfolio_tracker.service import (
     asset_service,
-    pricing_service,
-    portfolio_service,
     cash_service,
+    portfolio_service,
+    pricing_service,
     trading_service,
 )
 

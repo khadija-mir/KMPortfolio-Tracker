@@ -1,5 +1,6 @@
 from kmportfolio_tracker.errors.base_error import PortfolioTrackerError
 
+
 class DuplicatePortfolioError(PortfolioTrackerError):
     """Raised when creating a portfolio whose name already exists."""
 

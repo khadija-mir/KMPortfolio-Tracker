@@ -1,15 +1,15 @@
 import logging
 from decimal import Decimal
 
-from kmportfolio_tracker.service import pricing_service
-from kmportfolio_tracker.models.portfolio import Portfolio
 from kmportfolio_tracker.errors import (
     DuplicatePortfolioError,
-    PortfolioNotFoundError,
+    MissingReqInputError,
     NoPortfolioSelectedError,
     PortfolioNotEmptyError,
-    MissingReqInputError,
+    PortfolioNotFoundError,
 )
+from kmportfolio_tracker.models.portfolio import Portfolio
+from kmportfolio_tracker.service import pricing_service
 
 logger = logging.getLogger(__name__)
 
@@ -80,8 +80,8 @@ def delete_portfolio(name):
 def get_selected_portfolio_report():
     portfolio = get_selected_portfolio()
     positions = []
-    market_value_total = Decimal("0")
-    unrealized_gain_total = Decimal("0")
+    market_value_total = Decimal(0)
+    unrealized_gain_total = Decimal(0)
     missing_prices = []
     for position in portfolio.positions.values():
         # Fully sold positions are intentionally hidden.

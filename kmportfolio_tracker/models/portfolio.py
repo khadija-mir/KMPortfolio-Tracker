@@ -7,7 +7,7 @@ class Portfolio:
         self.description = description
         self.positions = {}
         self.trade_history = []
-        self.realized_gain = Decimal("0")
+        self.realized_gain = Decimal(0)
 
     def __str__(self):
         return (
