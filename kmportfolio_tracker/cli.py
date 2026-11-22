@@ -162,9 +162,7 @@ def sell_asset():
 def show_cash_balance():
     console.print(f"Cash balance: {format_money(cash_service.get_balance())}")
 
-def show_selected_portfolio():
-    report = portfolio_service.get_selected_portfolio_report()
-
+def print_overview(report):
     console.print(
         Panel(
             f"[bold]{escape(report['name'])}[/bold]\n"
@@ -173,6 +171,11 @@ def show_selected_portfolio():
             border_style="blue",
         )
     )
+
+def print_holdings(report):
+    if not report["positions"]:
+        console.print("[dim]No shares currently held.[/dim]")
+        return
 
     table = Table(title="Current Holdings")
     table.add_column("Ticker", style="cyan")
@@ -198,18 +201,14 @@ def show_selected_portfolio():
             format_money(unrealized),
         )
 
-    if not report["positions"]:
-        console.print("[dim]No shares currently held.[/dim]")
-    else:
-        console.print(table)
+    console.print(table)
 
+def print_totals(report):
     totals = Table(title="Portfolio Totals")
     totals.add_column("Metric")
     totals.add_column("Value", justify="right")
-
     market_value = report["market_value_total"]
     unrealized = report["unrealized_gain_total"]
-
     totals.add_row(
         "Market Value",
         format_money(market_value),
@@ -222,9 +221,9 @@ def show_selected_portfolio():
         "Realized Gain/Loss",
         format_money(report["realized_gain_total"]),
     )
-
     console.print(totals)
 
+def print_missing_prices(report):
     if report["missing_prices"]:
         missing = escape(", ".join(report["missing_prices"]))
         console.print(
@@ -232,10 +231,16 @@ def show_selected_portfolio():
             "Set those prices to calculate complete totals.[/yellow]"
         )
 
+def show_selected_portfolio():
+    report = portfolio_service.get_selected_portfolio_report()
+    print_overview(report)
+    print_holdings(report)
+    print_totals(report)
+    print_missing_prices(report)
+
 def handle_choice(choice):
     if choice == "0":
         return False
-
     try:
         if choice == "1":
             add_asset()
