@@ -17,7 +17,7 @@ def main():
     logger.info("Portfolio Tracker application started")
     try:
         run()
-    # Ctrl+C needs own catch to exit cleanly.
+    # Ctrl+C + Ctrl+Z needs own catch to exit cleanly.
     except (KeyboardInterrupt, EOFError):
         logger.info("Application closed with Ctrl+C or Ctrl+Z (EOF)")
         print("\nGoodbye!")
