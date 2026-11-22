@@ -60,6 +60,13 @@ def ask_decimal(prompt):
                 f"[yellow]'{escape(text)}' is not a valid number. Try again.[/yellow]"
             )
 
+def format_money(amount):
+    """format monetary amt"""
+    if amount is None: 
+        return "Unavailable"
+    sign = "-" if amount < 0 else ""
+    return f"{sign}${abs(amount):,.2f}"
+
 def show_assets():
     assets = asset_service.list_assets()
     if not assets:
@@ -73,7 +80,7 @@ def show_assets():
     table.add_column("Current Price", justify="right")
     for asset in assets:
         price = pricing_service.get_price(asset.ticker)
-        price_text = "Not set" if price is None else f"${price:.2f}"
+        price_text = "Not set" if price is None else format_money(price)
         #asked AI as guide about how the SQL injection issue could apply to my file
         #flagged here as user input should be treated as plain text
         #this is to address any issues with Rich markup injection
@@ -133,7 +140,7 @@ def deposit_funds():
     cash_service.deposit(amount)
     console.print(
         f"[green]Deposit successful.[/green] "
-        f"Cash balance: ${cash_service.get_balance():.2f}"
+        f"Cash balance: {format_money(cash_service.get_balance())}"
     )
 
 def buy_asset():
@@ -142,7 +149,7 @@ def buy_asset():
     price = ask_decimal("Price per share: ")
     trading_service.buy_asset(ticker, quantity, price)
     console.print("[green]Purchase completed successfully.[/green]")
-    console.print(f"Cash balance: ${cash_service.get_balance():.2f}")
+    console.print(f"Cash balance: {format_money(cash_service.get_balance())}")
 
 def sell_asset():
     ticker = ask_text("Ticker to sell: ")
@@ -150,10 +157,10 @@ def sell_asset():
     price = ask_decimal("Sale price per share: ")
     trading_service.sell_asset(ticker, quantity, price)
     console.print("[green]Sale completed successfully.[/green]")
-    console.print(f"Cash balance: ${cash_service.get_balance():.2f}")
+    console.print(f"Cash balance: {format_money(cash_service.get_balance())}")
 
 def show_cash_balance():
-    console.print(f"Cash balance: ${cash_service.get_balance():.2f}")
+    console.print(f"Cash balance: {format_money(cash_service.get_balance())}")
 
 def show_selected_portfolio():
     report = portfolio_service.get_selected_portfolio_report()
@@ -185,10 +192,10 @@ def show_selected_portfolio():
             escape(position["ticker"]),
             escape(position["name"]),
             str(position["quantity"]),
-            f"${position['average_cost']:.2f}",
-            "Not set" if current_price is None else f"${current_price:.2f}",
-            "Unavailable" if market_value is None else f"${market_value:.2f}",
-            "Unavailable" if unrealized is None else f"${unrealized:.2f}",
+            format_money(position["average_cost"]),
+            "Not set" if current_price is None else format_money(current_price),
+            format_money(market_value),
+            format_money(unrealized),
         )
 
     if not report["positions"]:
@@ -205,15 +212,15 @@ def show_selected_portfolio():
 
     totals.add_row(
         "Market Value",
-        "Unavailable" if market_value is None else f"${market_value:.2f}",
+        format_money(market_value),
     )
     totals.add_row(
         "Unrealized Gain/Loss",
-        "Unavailable" if unrealized is None else f"${unrealized:.2f}",
+        format_money(unrealized),
     )
     totals.add_row(
         "Realized Gain/Loss",
-        f"${report['realized_gain_total']:.2f}",
+        format_money(report["realized_gain_total"]),
     )
 
     console.print(totals)
