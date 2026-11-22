@@ -9,7 +9,7 @@ from kmportfolio_tracker.errors import (
     PortfolioNotFoundError,
 )
 from kmportfolio_tracker.models.portfolio import Portfolio
-from kmportfolio_tracker.service import pricing_service
+from kmportfolio_tracker.services import pricing_service
 
 logger = logging.getLogger(__name__)
 

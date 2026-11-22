@@ -2,7 +2,7 @@ import logging
 from decimal import Decimal
 
 from kmportfolio_tracker.errors import InvalidAmountError
-from kmportfolio_tracker.service import asset_service
+from kmportfolio_tracker.services import asset_service
 
 logger = logging.getLogger(__name__)
 

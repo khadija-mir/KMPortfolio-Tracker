@@ -9,7 +9,7 @@ from kmportfolio_tracker.errors import (
     PositionNotFoundError,
 )
 from kmportfolio_tracker.models.position import Position
-from kmportfolio_tracker.service import (
+from kmportfolio_tracker.services import (
     asset_service,
     cash_service,
     portfolio_service,
