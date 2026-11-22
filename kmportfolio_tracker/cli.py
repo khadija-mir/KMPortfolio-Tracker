@@ -76,6 +76,7 @@ def show_assets():
         price_text = "Not set" if price is None else f"${price:.2f}"
         #asked AI as guide about how the SQL injection issue could apply to my file
         #flagged here as user input should be treated as plain text
+        #this is to address any issues with Rich markup injection
         table.add_row(escape(asset.ticker), escape(asset.name), price_text)
     console.print(table)
 
