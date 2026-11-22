@@ -18,8 +18,8 @@ def main():
     try:
         run()
     # Ctrl+C needs own catch to exit cleanly.
-    except KeyboardInterrupt:
-        logger.info("Application closed with Ctrl+C")
+    except (KeyboardInterrupt, EOFError):
+        logger.info("Application closed with Ctrl+C or Ctrl+Z (EOF)")
         print("\nGoodbye!")
     except Exception:
         logger.exception("An unexpected error occurred")
