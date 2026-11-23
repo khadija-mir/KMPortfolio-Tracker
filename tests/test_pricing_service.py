@@ -6,7 +6,7 @@ from kmportfolio_tracker.errors import AssetNotFoundError, InvalidAmountError
 from kmportfolio_tracker.services import asset_service, pricing_service
 
 
-# Check that setting a new price replaces prev price.
+# Check that setting a new price replaces prev price
 def test_setting_a_price_again_replaces_the_old_one(empty_db):
     asset_service.add_asset("AAPL", "Apple Inc.")
     pricing_service.set_price("AAPL", Decimal(150))
@@ -24,7 +24,7 @@ def test_negative_price_is_refused_and_price_unchanged(empty_db):
     with pytest.raises(InvalidAmountError):
         pricing_service.set_price("AAPL", Decimal(-1))
     asset, price = pricing_service.list_prices()[0]
-    # The rejected update should leave AAPL at $150.
+    # The rejected update should leave AAPL at $150
     assert asset.ticker == "AAPL"
     assert price == Decimal(150)
 

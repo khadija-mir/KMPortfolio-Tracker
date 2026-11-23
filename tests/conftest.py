@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.pool import StaticPool
 
 from kmportfolio_tracker import database
@@ -21,6 +21,10 @@ def empty_db(monkeypatch):
         "sqlite://",
         poolclass=StaticPool,
     )
+    #SQLite supposedly ignores foreign key constraints by default, so we need to turn them on.
+    @event.listens_for(engine, "connect")
+    def enable_foreign_keys(connection,record):
+        connection.execute("PRAGMA foreign_keys=ON")
     database.Base.metadata.create_all(engine)
     # mock db
     monkeypatch.setattr(database, "get_engine", lambda: engine)
