@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 
+#Position table
 class Position:
     def __init__(self, asset, quantity=Decimal(0), average_cost=Decimal(0)):
         self.asset = asset

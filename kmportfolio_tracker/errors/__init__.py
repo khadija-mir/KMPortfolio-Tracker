@@ -1,4 +1,4 @@
-# Collects every error here so other modules can import from one place.
+# Collects every error here so other modules can import from one place
 from kmportfolio_tracker.errors.asset_errors import (
     AssetNotFoundError,
     DuplicateAssetError,

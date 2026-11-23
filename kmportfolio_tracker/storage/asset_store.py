@@ -1,4 +1,3 @@
-
 from sqlalchemy import select
 
 from kmportfolio_tracker.models.asset import Asset

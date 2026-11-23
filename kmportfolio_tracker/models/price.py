@@ -1,4 +1,3 @@
-
 from decimal import Decimal
 
 from sqlalchemy import ForeignKey, Numeric
@@ -8,19 +7,15 @@ from kmportfolio_tracker.database import Base
 from kmportfolio_tracker.models.asset import Asset
 
 
-# Price represents the prices table in the database.
+# Price table
 class Price(Base):
     __tablename__ = "prices"
-
-    # Each price record gets its own database ID.
+    # DB ID for others to reference
     id: Mapped[int] = mapped_column(primary_key=True)
-
-    # Each asset should have only one current price record.
-    # unique=True prevents multiple current prices from being stored for the same asset.
+    # Each asset = only one current price record
+    # unique=True prevents multiple current prices
     asset_id: Mapped[int] = mapped_column(ForeignKey("assets.id"), unique=True)
-
-    # Store the asset's current price with four decimal places.
+    # asset's current price with four decimal places
     price: Mapped[Decimal] = mapped_column(Numeric(14, 4))
-
-    # This relationship lets us access the asset associated with the price.
+    # This relationship lets us access the asset associated with the price/shown in class
     asset: Mapped[Asset] = relationship(lazy="selectin")

@@ -1,4 +1,3 @@
-
 from sqlalchemy import select
 
 from kmportfolio_tracker.models.transaction import Transaction
@@ -8,7 +7,7 @@ from kmportfolio_tracker.models.transaction import Transaction
 def add_transaction(session, transaction):
     session.add(transaction)
 
-# Return all transactions for a portfolio, in the order they happened.
+# Return all transactions for a portfolio, in the order they happened
 def get_transactions(session, portfolio):
     return session.scalars(
         select(Transaction)
@@ -16,7 +15,7 @@ def get_transactions(session, portfolio):
         .order_by(Transaction.id)
     ).all()
 
-# Delete all transactions belonging to a portfolio.
+# Delete all transactions belonging to a portfolio
 def delete_transactions(session, portfolio):
     for transaction in get_transactions(session, portfolio):
         session.delete(transaction)

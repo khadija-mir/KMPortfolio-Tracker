@@ -21,7 +21,7 @@ def empty_db(monkeypatch):
         "sqlite://",
         poolclass=StaticPool,
     )
-    #SQLite supposedly ignores foreign key constraints by default, so we need to turn them on.
+    #SQLite supposedly ignores foreign key constraints by default, so we need to turn them on
     @event.listens_for(engine, "connect")
     def enable_foreign_keys(connection,record):
         connection.execute("PRAGMA foreign_keys=ON")

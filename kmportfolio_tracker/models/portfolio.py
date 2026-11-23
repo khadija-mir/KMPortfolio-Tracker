@@ -4,7 +4,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from kmportfolio_tracker.database import Base
 
 
-# Portfolio represents the portfolios table in the database.
+# Portfolio table
 class Portfolio(Base):
     __tablename__ = "portfolios"
     # Each portfolio gets its own database ID.

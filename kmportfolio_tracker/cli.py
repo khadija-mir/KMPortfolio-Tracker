@@ -225,7 +225,7 @@ def print_missing_prices(report):
             f"[yellow]Prices are missing for: {missing}. "
             "Set those prices to calculate complete totals.[/yellow]"
         )
-# Display the selected portfolio and report.
+# Display the selected portfolio and report
 def show_selected_portfolio():
     report = portfolio_service.get_selected_portfolio_report()
     print_overview(report)

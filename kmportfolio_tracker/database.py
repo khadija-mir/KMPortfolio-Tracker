@@ -1,4 +1,3 @@
-
 import functools
 import os
 
@@ -33,8 +32,7 @@ def create_tables():
 
 def transaction():
     # Create a session factory using the engine returned by get_engine().
-    # expire_on_commit=False keeps objects readable after the session closes.
+    # expire_on_commit=False keeps objects readable after the session closes = i want this for users
     Session = sessionmaker(get_engine(), expire_on_commit=False)
     # Session.begin() opens a transaction.
-    # It automatically commits if everything succeeds and rolls back if an error occurs.
     return Session.begin()

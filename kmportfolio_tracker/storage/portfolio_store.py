@@ -15,7 +15,7 @@ def get_portfolio(session, name):
         )
     ).first()
 
-# Return all portfolios, ordered alphabetically by name.
+# Return all portfolios, ordered alphabetically
 def list_portfolios(session):
     return session.scalars(
         select(Portfolio).order_by(Portfolio.name)

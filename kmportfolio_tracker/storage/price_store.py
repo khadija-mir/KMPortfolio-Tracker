@@ -9,7 +9,7 @@ def _find_price_row(session, asset):
         select(Price).filter_by(asset_id=asset.id)
     ).first()
 
-# get the current price for an asset, or return None if it hasn't been set.
+# get the current price for an asset/return None if not set
 def get_price(session, asset):
     price_row = _find_price_row(session, asset)
     if price_row is None:
