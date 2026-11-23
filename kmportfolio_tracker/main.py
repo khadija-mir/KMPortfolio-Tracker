@@ -1,6 +1,11 @@
 import logging
 
+from sqlalchemy.exc import OperationalError
+
+from kmportfolio_tracker import database
 from kmportfolio_tracker.cli import run
+from kmportfolio_tracker.models import account, asset, portfolio, price, transaction  # noqa: F401
+
 logger = logging.getLogger(__name__)
 
 def configure_logging():
@@ -16,10 +21,26 @@ def main():
     configure_logging()
     logger.info("Portfolio Tracker application started")
     try:
-        run()
-    # Ctrl+C needs own catch to exit cleanly.
-    except KeyboardInterrupt:
-        logger.info("Application closed with Ctrl+C")
+        database.create_tables()
+    except OperationalError:
+        logger.exception("Could not connect to the database")
+        print(
+            "Could not connect to the database. "
+            "Check that MySQL is running and your .env settings are correct."
+        )
+        return
+    except KeyError as error:
+        logger.exception("A required database setting is missing")
+        print(
+            f"Missing database setting: {error}. "
+            "Check your .env file."
+        )
+        return
+    try:
+        run()    
+    # Ctrl+C + Ctrl+Z needs own catch to exit cleanly.
+    except (KeyboardInterrupt, EOFError):
+        logger.info("Application closed with Ctrl+C or Ctrl+Z (EOF)")
         print("\nGoodbye!")
     except Exception:
         logger.exception("An unexpected error occurred")
