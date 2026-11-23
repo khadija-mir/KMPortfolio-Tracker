@@ -6,6 +6,7 @@ class Position:
         self.asset = asset
         self.quantity = quantity
         self.average_cost = average_cost
+        self.realized_gain = Decimal(0)
 
     def buy(self, quantity, price):
         total_cost = self.quantity * self.average_cost + quantity * price
@@ -15,4 +16,10 @@ class Position:
     def sell(self, quantity, price):
         gain = (price - self.average_cost) * quantity
         self.quantity -= quantity
+        self.realized_gain += gain
         return gain
+    
+    def market_value(self, price):
+        return self.quantity * price
+    def unrealized_gain(self, price):
+        return (price - self.average_cost) * self.quantity

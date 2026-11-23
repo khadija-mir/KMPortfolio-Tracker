@@ -1,29 +1,35 @@
 import logging
-from decimal import Decimal
+from datetime import date
 
+from kmportfolio_tracker import database
 from kmportfolio_tracker.errors import (
-    InsufficientFundsError,
     InsufficientSharesError,
     InvalidAmountError,
     InvalidQuantityError,
     PositionNotFoundError,
 )
-from kmportfolio_tracker.models.position import Position
+from kmportfolio_tracker.models.transaction import Transaction
 from kmportfolio_tracker.services import (
     asset_service,
     cash_service,
     portfolio_service,
 )
+from kmportfolio_tracker.services.validation import (
+    round_to_cents,
+    round_to_four_places,
+    to_decimal,
+)
+from kmportfolio_tracker.storage import transaction_store
 
 logger = logging.getLogger(__name__)
 
-
+# Buy shares and record the transaction in the database.
 def buy_asset(ticker, quantity, price):
-    asset = asset_service.get_asset(ticker)
-    portfolio = portfolio_service.get_selected_portfolio()
+    quantity = to_decimal(quantity, "Purchase quantity")
+    price = to_decimal(price, "Purchase price")
 
-    quantity = Decimal(quantity)
-    price = Decimal(price)
+    quantity = round_to_four_places(quantity)
+    price = round_to_four_places(price)
 
     if quantity <= 0:
         raise InvalidQuantityError(
@@ -35,31 +41,25 @@ def buy_asset(ticker, quantity, price):
             "Purchase price must be greater than zero."
         )
 
-    total_cost = quantity * price
+    # Round the total cost before checking available cash.
+    total_cost = round_to_cents(quantity * price)
 
-    # Validate available cash before changing the position.
-    if total_cost > cash_service.get_balance():
-        raise InsufficientFundsError(
-            f"Purchase costs ${total_cost}, but only "
-            f"${cash_service.get_balance()} is available."
+    with database.transaction() as session:
+        asset = asset_service.get_asset(session, ticker)
+        portfolio = portfolio_service.get_selected_portfolio(session)
+
+        # The cash service handles the insufficient-funds rule.
+        cash_service.spend(session, total_cost)
+
+        transaction = Transaction(
+            portfolio=portfolio,
+            asset=asset,
+            side="buy",
+            quantity=quantity,
+            price_per_share=price,
+            trade_date=date.today(),
         )
-
-    position = portfolio.positions.get(asset.ticker)
-
-    if position is None:
-        position = Position(asset)
-        portfolio.positions[asset.ticker] = position
-
-    cash_service.spend(total_cost)
-    position.buy(quantity, price)
-
-    portfolio.trade_history.append({
-        "type": "BUY",
-        "ticker": asset.ticker,
-        "quantity": quantity,
-        "price": price,
-        "total": total_cost,
-    })
+        transaction_store.add_transaction(session, transaction)
 
     logger.info(
         "Bought %s shares of %s at %s in %s",
@@ -68,11 +68,11 @@ def buy_asset(ticker, quantity, price):
 
 
 def sell_asset(ticker, quantity, price):
-    asset = asset_service.get_asset(ticker)
-    portfolio = portfolio_service.get_selected_portfolio()
+    quantity = to_decimal(quantity, "Sale quantity")
+    price = to_decimal(price, "Sale price")
 
-    quantity = Decimal(quantity)
-    price = Decimal(price)
+    quantity = round_to_four_places(quantity)
+    price = round_to_four_places(price)
 
     if quantity <= 0:
         raise InvalidQuantityError(
@@ -84,37 +84,49 @@ def sell_asset(ticker, quantity, price):
             "Sale price cannot be negative."
         )
 
-    position = portfolio.positions.get(asset.ticker)
+    # Round the proceeds to cents before adding them to the balance.
+    proceeds = round_to_cents(quantity * price)
 
-    if position is None or position.quantity <= 0:
-        raise PositionNotFoundError(
-            f"No shares of '{asset.ticker}' are held in "
-            f"'{portfolio.name}'."
+    with database.transaction() as session:
+        asset = asset_service.get_asset(session, ticker)
+        portfolio = portfolio_service.get_selected_portfolio(session)
+
+        # Rebuild the current position from its saved transactions.
+        positions = portfolio_service.get_positions(session, portfolio)
+        position = positions.get(asset.ticker)
+
+        if position is None or position.quantity <= 0:
+            raise PositionNotFoundError(
+                f"No shares of '{asset.ticker}' are held in "
+                f"'{portfolio.name}'."
+            )
+
+        if quantity > position.quantity:
+            raise InsufficientSharesError(
+                f"You hold {position.quantity} shares, "
+                f"so you cannot sell {quantity}."
+            )
+
+        # Calculate realized gain before recording the sale.
+        realized_gain = position.sell(quantity, price)
+
+        cash_service.receive(session, proceeds)
+
+        transaction = Transaction(
+            portfolio=portfolio,
+            asset=asset,
+            side="sell",
+            quantity=quantity,
+            price_per_share=price,
+            trade_date=date.today(),
         )
+        transaction_store.add_transaction(session, transaction)
 
-    if quantity > position.quantity:
-        raise InsufficientSharesError(
-            f"You hold {position.quantity} shares, "
-            f"so you cannot sell {quantity}."
+        logger.info(
+            "Sold %s shares of %s at %s in %s; realized gain %s",
+            quantity,
+            asset.ticker,
+            price,
+            portfolio.name,
+            realized_gain,
         )
-
-    proceeds = quantity * price
-    realized_gain = position.sell(quantity, price)
-
-    cash_service.receive(proceeds)
-    portfolio.realized_gain += realized_gain
-
-    portfolio.trade_history.append({
-        "type": "SELL",
-        "ticker": asset.ticker,
-        "quantity": quantity,
-        "price": price,
-        "total": proceeds,
-        "realized_gain": realized_gain,
-    })
-
-    logger.info(
-        "Sold %s shares of %s at %s in %s; realized gain %s",
-        quantity, asset.ticker, price,
-        portfolio.name, realized_gain,
-    )

@@ -22,3 +22,15 @@ def get_cash_balance(session):
 def set_cash_balance(session, amount):
     account = get_account(session)
     account.cash_balance = amount
+
+# Return the portfolio currently selected for the account.
+def get_selected_portfolio(session):
+    account = get_account(session)
+    return account.selected_portfolio
+
+
+# Set the account's selected portfolio.
+# Passing None clears the selection.
+def set_selected_portfolio(session, portfolio):
+    account = get_account(session)
+    account.selected_portfolio = portfolio

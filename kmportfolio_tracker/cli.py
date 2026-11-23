@@ -68,7 +68,7 @@ def format_money(amount):
     return f"{sign}${abs(amount):,.2f}"
 
 def show_assets():
-    assets = asset_service.list_assets()
+    assets =pricing_service.list_prices()
     if not assets:
         console.print(
             Panel("No assets have been added.", title="Assets")
@@ -78,8 +78,7 @@ def show_assets():
     table.add_column("Ticker", style="cyan")
     table.add_column("Name")
     table.add_column("Current Price", justify="right")
-    for asset in assets:
-        price = pricing_service.get_price(asset.ticker)
+    for asset, price in assets:
         price_text = "Not set" if price is None else format_money(price)
         #asked AI as guide about how the SQL injection issue could apply to my file
         #flagged here as user input should be treated as plain text
@@ -101,8 +100,8 @@ def set_asset_price():
 
 def create_portfolio():
     name = ask_text("Portfolio name: ")
-    description = ask_text("Investment strategy: ")
-    portfolio_service.create_portfolio(name, description)
+    strategy = ask_text("Investment strategy: ")
+    portfolio_service.create_portfolio(name, strategy)
     console.print("[green]Portfolio created successfully.[/green]")
 
 def show_portfolios():
@@ -120,7 +119,7 @@ def show_portfolios():
         marker = "[green]Selected[/green]" if selected else ""
         table.add_row(
             escape(portfolio.name),
-            escape(portfolio.description),
+            escape(portfolio.strategy),
             marker,
         )
     console.print(table)
@@ -165,15 +164,15 @@ def show_cash_balance():
 def print_overview(report):
     console.print(
         Panel(
-            f"[bold]{escape(report['name'])}[/bold]\n"
-            f"Strategy: {escape(report['description'])}",
+            f"[bold]{escape(report.name)}[/bold]\n"
+            f"Strategy: {escape(report.strategy)}",
             title="Portfolio Overview",
             border_style="blue",
         )
     )
 
 def print_holdings(report):
-    if not report["positions"]:
+    if not report.holdings:
         console.print("[dim]No shares currently held.[/dim]")
         return
 
@@ -186,51 +185,47 @@ def print_holdings(report):
     table.add_column("Market Value", justify="right")
     table.add_column("Unrealized Gain/Loss", justify="right")
 
-    for position in report["positions"]:
-        current_price = position["current_price"]
-        market_value = position["market_value"]
-        unrealized = position["unrealized_gain"]
+    for row in report.holdings:
+        current_price = row.current_price
 
         table.add_row(
-            escape(position["ticker"]),
-            escape(position["name"]),
-            str(position["quantity"]),
-            format_money(position["average_cost"]),
+            escape(row.ticker),
+            escape(row.name),
+            str(row.quantity),
+            format_money(row.average_cost),
             "Not set" if current_price is None else format_money(current_price),
-            format_money(market_value),
-            format_money(unrealized),
+            format_money(row.market_value),
+            format_money(row.unrealized_gain),
         )
-
     console.print(table)
 
 def print_totals(report):
     totals = Table(title="Portfolio Totals")
     totals.add_column("Metric")
     totals.add_column("Value", justify="right")
-    market_value = report["market_value_total"]
-    unrealized = report["unrealized_gain_total"]
+
     totals.add_row(
         "Market Value",
-        format_money(market_value),
+        format_money(report.market_value_total),
     )
     totals.add_row(
         "Unrealized Gain/Loss",
-        format_money(unrealized),
+        format_money(report.unrealized_gain_total),
     )
     totals.add_row(
         "Realized Gain/Loss",
-        format_money(report["realized_gain_total"]),
+        format_money(report.realized_gain_total),
     )
     console.print(totals)
 
 def print_missing_prices(report):
-    if report["missing_prices"]:
-        missing = escape(", ".join(report["missing_prices"]))
+    if report.missing_prices:
+        missing = escape(", ".join(report.missing_prices))
         console.print(
             f"[yellow]Prices are missing for: {missing}. "
             "Set those prices to calculate complete totals.[/yellow]"
         )
-
+# Display the selected portfolio and report.
 def show_selected_portfolio():
     report = portfolio_service.get_selected_portfolio_report()
     print_overview(report)
