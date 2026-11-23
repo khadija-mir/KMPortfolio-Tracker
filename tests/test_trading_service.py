@@ -99,3 +99,13 @@ def test_buying_without_a_selected_portfolio_is_refused(empty_db):
         trading_service.buy_asset("AAPL", Decimal(1), Decimal(100))
     # Rejected purchase leaves the $1,000 balance unchanged.
     assert cash_service.get_balance() == Decimal("1000.00")
+
+# Check that buying is allowed when the rounded cost equals available cash.
+def test_buy_is_allowed_when_rounded_cost_equals_cash(empty_db):
+    cash_service.deposit("100")
+    asset_service.add_asset("AAPL", "Apple Inc.")
+    portfolio_service.create_portfolio("Growth", "Long-term growth")
+    portfolio_service.select_portfolio("Growth")
+    trading_service.buy_asset("AAPL", Decimal(3), Decimal("33.3334"))
+    # 3 x $33.3334 = $100.0002, rounded to $100.00
+    assert cash_service.get_balance() == Decimal("0.00")
